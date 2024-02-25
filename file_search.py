@@ -1,4 +1,5 @@
 import mysql.connector
+import humanize
 
 # Connect to MySQL database
 def connect_to_database():
@@ -59,3 +60,60 @@ def search_files_by_tag(tag=None, date=None):
 def search_files_with_tag(tag=None, date=None):
     matching_files = search_files_by_tag(tag=tag, date=date)
     return matching_files
+
+def query_metadata_from_database(filename):
+    # Connect to the MySQL database
+    connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="mediagdrive"
+    )
+
+    cursor = connection.cursor()
+
+    try:
+        # Construct the SQL query to fetch metadata based on the filename
+        query = "SELECT filename, file_type, file_size, upload_date FROM filemetadata WHERE filename = %s"
+        cursor.execute(query, (filename,))
+        
+        # Fetch the result
+        result = cursor.fetchone()
+        
+        # Get the column names
+        column_names = [i[0] for i in cursor.description]
+
+        # Define mapping for custom keys
+        key_mapping = {
+            'filename': 'File Name',
+            'file_type': 'File Type',
+            'file_size': 'File Size',
+            'upload_date': 'Upload Date'
+        }
+
+        # Format the result with custom keys
+        formatted_result = {}
+        for column, value in zip(column_names, result):
+            formatted_result[key_mapping[column]] = value
+        for i in  formatted_result:
+            if i == "File Size":
+                if formatted_result[i] != None:
+                    formatted_result[i] = humanize.naturalsize(formatted_result[i], binary=True)
+                else:
+                    formatted_result[i] = "-"
+            elif i == "File Type":
+                
+                parts = formatted_result[i].split('/')
+                formatted_result[i] = parts[-1]
+                if formatted_result[i] == "vnd.google-apps.folder":
+                    formatted_result[i] = "Folder"
+            print(formatted_result[i])
+        # Close cursor and connection
+        cursor.close()
+        connection.close()
+
+        return formatted_result  # Return formatted metadata
+    except Exception as e:
+        # Handle any errors
+        print("Error fetching metadata:", e)
+        return None
