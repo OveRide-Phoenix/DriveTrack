@@ -72,20 +72,86 @@
             margin-right: 10px;
         }
         .file-name {
-    flex: 1;
-    color: #fff;
-    padding: 10px;
-    text-decoration: none;
-    border-radius: 8px;
-    border: 2px solid transparent; /* Add border */
-    transition: background-color 0.3s, border-color 0.3s; /* Add border transition */
-}
+            flex: 1;
+            color: #fff;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 2px solid transparent; /* Add border */
+            transition: background-color 0.3s, border-color 0.3s; /* Add border transition */
+        }
 
-.file-name:hover {
-    background-color: #254bd5;
-    border-color: #254bd5; /* Change border color on hover */
-}
+        .file-name:hover {
+            background-color: #254bd5;
+            border-color: #254bd5; /* Change border color on hover */
+        }
+        /* Tooltip container */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
 
+        /* Tooltip text */
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Tooltip text arrow */
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: black transparent transparent transparent;
+        }
+
+        /* Show the tooltip text when hovering over the tooltip container */
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Style for file details menu */
+        .file-details-menu {
+            position: absolute;
+            background-color: #202225; /* Dark background color */
+            color: #e0e0e0; /* Light text color */
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .file-details-menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .file-details-menu ul li {
+            margin-bottom: 5px;
+        }
+
+        .file-details-menu ul li span {
+            font-weight: bold;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -117,21 +183,98 @@
                                 <img src="static/default_thumbnail.png" alt="Default Thumbnail">
                             </a>
                         {% endif %}
-                        <p class="file-name"><a href="{% if file.file_type == 'application/vnd.google-apps.folder' %}https://drive.google.com/drive/folders/{{ file.file_id }}{% else %}https://drive.google.com/drive/folders/{{ file.parent_folder_id }}{% endif %}" target="_blank">{{ file.filename }}</a></p>
+                        <p class="file-name">
+                            <a href="{% if file.file_type == 'application/vnd.google-apps.folder' %}https://drive.google.com/drive/folders/{{ file.file_id }}{% else %}https://drive.google.com/drive/folders/{{ file.parent_folder_id }}{% endif %}" target="_blank">{{ file.filename }}</a>
+                        </p>
+                        <div class="file-details">
+                            <!-- Information button with onmouseover and onmouseleave events -->
+                            <button class="info-button" onmouseover="showFileInfo('{{ file.filename }}')" onmouseleave="hideFileInfo('{{ file.filename }}')">
+                                <img src="static\information.png" alt="Information" width="20">
+                            </button>
+                        </div>
+                        <!-- Tooltip content -->
+                        <span class="tooltip" id="tooltip_{{ file.filename }}">
+                            <span class="tooltip-text">File Info: {{ file.filename }}</span>
+                        </span>
                     </div>
                 {% endfor %}
             {% else %}
                 <p>No files found for the tag "{{ search_term }}"</p>
             {% endif %}
         </div>
+        <!-- File metadata container -->
+        <div class="metadata-container" id="metadata-container">
+            <!-- File details menu will be displayed here -->
+        </div>
     </div>
-    
     <!-- JavaScript to toggle dark mode -->
     <script>
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark')
+        }
+
+        // Function to show file metadata
+        function showFileInfo(filename) {
+            // Get the tooltip element by filename
+            var tooltip = document.getElementById("tooltip_" + filename);
+            // Display the tooltip
+            tooltip.style.visibility = "visible";
+            tooltip.style.opacity = 1;
+
+            // Make an AJAX request to fetch file metadata
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/get_file_metadata?filename=" + encodeURIComponent(filename), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Update file metadata container with fetched metadata
+                    var metadataContainer = document.getElementById("metadata-container");
+                    var fileMetadata = document.getElementById("file-metadata");
+                    var details = JSON.parse(xhr.responseText);
+                    var detailsMenu = createFileDetailsMenu(details);
+                    metadataContainer.innerHTML = ""; // Clear previous content
+                    metadataContainer.appendChild(detailsMenu); // Append the details menu
+                    metadataContainer.style.display = "block";
+                }
+            };
+            xhr.send();
+        }
+
+        // Function to create file details menu dynamically
+        function createFileDetailsMenu(details) {
+            var menu = document.createElement("div");
+            menu.className = "file-details-menu";
+
+            var ul = document.createElement("ul");
+            for (var key in details) {
+                if (details.hasOwnProperty(key)) {
+                    var li = document.createElement("li");
+                    var spanKey = document.createElement("span");
+                    spanKey.textContent = key + ":";
+                    var spanValue = document.createElement("span");
+                    spanValue.textContent = details[key];
+                    li.appendChild(spanKey);
+                    li.appendChild(spanValue);
+                    ul.appendChild(li);
+                }
+            }
+
+            menu.appendChild(ul);
+            return menu;
+        }
+
+        // Function to hide file details
+        function hideFileInfo(filename) {
+            // Get the tooltip element by filename
+            var tooltip = document.getElementById("tooltip_" + filename);
+            // Hide the tooltip
+            tooltip.style.visibility = "hidden";
+            tooltip.style.opacity = 0;
+
+            // Hide the file metadata container
+            var metadataContainer = document.getElementById("metadata-container");
+            metadataContainer.style.display = "none";
         }
     </script>
 </body>
