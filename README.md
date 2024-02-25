@@ -29,11 +29,7 @@ DriveTrack is a web application built with Flask that allows users to search for
    - Create a new MySQL database for DriveTrack.
    - Configure the database connection in the `mysql_connector.py` file.
 
-5. **Download and install Google Drive API credentials:**
-   - Follow the instructions in the [Google Drive API documentation](https://developers.google.com/drive) to obtain credentials.
-   - Save the credentials file as `credentials.json` in the project directory.
-
-6. **Run the application:**
+5. **Run the application:**
    ```bash
    python app.py
    ```
