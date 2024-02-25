@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>File Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #202225; /* Dark background color */
+            color: #e0e0e0; /* Light text color */
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #2f3136; /* Dark container background color */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #e0e0e0; /* Light title color */
+        }
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="date"] {
+            width: 60%;
+            padding: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #46494e;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #40444b;
+            color: #e0e0e0;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #254bd5;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #516ed8;
+        }
+        .output {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .file-image {
+            width: 40px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .file-name {
+    flex: 1;
+    color: #fff;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 2px solid transparent; /* Add border */
+    transition: background-color 0.3s, border-color 0.3s; /* Add border transition */
+}
+
+.file-name:hover {
+    background-color: #254bd5;
+    border-color: #254bd5; /* Change border color on hover */
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search for Files</h1>
+        <form action="{{ url_for('search_files') }}" method="POST">
+            <input type="text" name="tag" placeholder="Enter a tag"><br>
+            <input type="date" name="date" placeholder="Select a date"><br>
+            <input type="submit" value="Search">
+        </form>
+        <div class="output">
+            {% if search_results %}
+                {% for file in search_results %}
+                    <div class="file-item">
+                        {% if file.file_type == 'application/vnd.google-apps.folder' %}
+                            <a href="https://drive.google.com/drive/folders/{{ file.file_id }}" target="_blank" class="file-image">
+                                <img src="static/folder.png">
+                            </a>
+                        {% elif file.file_type == 'image/jpeg' or file.file_type == 'image/png' or file.file_type == 'image/jpg' %}
+                            <a href="https://drive.google.com/drive/folders/{{ file.parent_folder_id }}" target="_blank" class="file-image">
+                                <img src="static/image.png">
+                            </a>
+                        {% elif file.file_type == 'video/mp4' or file.file_type == 'video/quicktime' %}
+                            <a href="https://drive.google.com/drive/folders/{{ file.parent_folder_id }}" target="_blank" class="file-image">
+                                <img src="static/video.png">
+                            </a>
+                        {% else %}
+                            <a href="https://drive.google.com/drive/folders/{{ file.parent_folder_id }}" target="_blank" class="file-image">
+                                <img src="static/default_thumbnail.png" alt="Default Thumbnail">
+                            </a>
+                        {% endif %}
+                        <p class="file-name"><a href="{% if file.file_type == 'application/vnd.google-apps.folder' %}https://drive.google.com/drive/folders/{{ file.file_id }}{% else %}https://drive.google.com/drive/folders/{{ file.parent_folder_id }}{% endif %}" target="_blank">{{ file.filename }}</a></p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No files found for the tag "{{ search_term }}"</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- JavaScript to toggle dark mode -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+</body>
+</html>

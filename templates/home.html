@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <title>Home Page</title>
+    <style>
+        /* Your CSS styles here */
+        /* This is just an example, you can customize it according to your needs */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #202225; /* Dark background color */
+            color: #e0e0e0; /* Light text color */
+            display: flex;
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            height: 100vh; /* Full height of viewport */
+        }
+        .container {
+            max-width: 600px; /* Adjust container width */
+            padding: 20px;
+            background-color: #2f3136; /* Dark container background color */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #e0e0e0; /* Light title color */
+        }
+        form {
+            text-align: center;
+            position: relative; /* Add position relative to container */
+        }
+        .loading-bar {
+            position: absolute;
+            bottom: -10px; /* Adjust bottom position */
+            left: 0;
+            width: 100%;
+            height: 3px; /* Adjust height of loading bar */
+            background-color: #254bd5; /* Discord blue color */
+            border-radius: 3px;
+            display: none; /* Initially hide loading bar */
+        }
+        input[type="text"] {
+            width: calc(100% - 120px); /* Adjust input width */
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #46494e; /* Dark border color */
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #40444b; /* Dark input background color */
+            color: #e0e0e0; /* Light text color */
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #254bd5; /* Discord blue color */
+            color: #e0e0e0; /* Light text color */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #516ed8; /* Darker Discord blue color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Home Page</h1>
+
+        <form action="/" method="POST" class="mb-2">
+            <label for="search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+                <input type="input" id="google_drive_link" name="google_drive_link" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter Google Drive" required />
+                <button type="submit" class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+                <!-- Loading bar -->
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+        </form>
+        
+    </div>
+
+    <!-- JavaScript to toggle dark mode -->
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+
+        // Function to simulate GDrive_PreProcessing.py execution progress
+        function simulateExecutionProgress() {
+            var loadingBar = document.getElementById('loadingBar');
+            var width = 1;
+            var interval = setInterval(frame, 1000); // Update every 1 second
+
+            function frame() {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    loadingBar.style.display = 'none'; // Hide loading bar when progress completes
+                } else {
+                    width++;
+                    loadingBar.style.width = width + '%';
+                }
+            }
+        }
+
+        // Call simulateExecutionProgress function when form is submitted
+        document.querySelector('form').addEventListener('submit', function() {
+            var loadingBar = document.getElementById('loadingBar');
+            loadingBar.style.display = 'block'; // Show loading bar when form is submitted
+            simulateExecutionProgress(); // Call your function to simulate progress
+        });
+    </script>
+</body>
+</html>
